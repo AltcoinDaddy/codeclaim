@@ -3,8 +3,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Terminal UI",
-  description: "Terminal UI Interface",
+  title: "Codeclaim Waitlist",
+  description: "Join the Codeclaim waitlist and earn rewards for your open source contributions",
     generator: 'v0.dev'
 }
 
