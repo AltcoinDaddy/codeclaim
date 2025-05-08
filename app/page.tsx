@@ -636,7 +636,7 @@ export default function Home() {
 
                     {!tasks.discord && !inProgress.discord ? (
                       <a
-                        href="https://discord.gg/codeclaim"
+                        href="https://discord.gg/XUTXTEPr9b"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => startTaskTimer("discord")}
@@ -647,16 +647,7 @@ export default function Home() {
                       </a>
                     ) : inProgress.discord ? (
                       <div className="task-progress">
-                        <div className="task-progress-text">Verifying your Discord join... ({timers.discord}s)</div>
-                        <div className="task-progress-bar">
-                          <div
-                            className="task-progress-fill"
-                            style={{ width: `${(timers.discord / 30) * 100}%` }}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-valuenow={(timers.discord / 30) * 100}
-                          />
-                        </div>
+                        <div className="task-progress-text">Verifying your task completion...</div>
                       </div>
                     ) : (
                       <div className="task-completed-message">Discord task completed!</div>
@@ -686,7 +677,7 @@ export default function Home() {
 
                     {!tasks.telegram && !inProgress.telegram ? (
                       <a
-                        href="https://t.me/codeclaim"
+                        href="https://t.me/codeclaims"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => startTaskTimer("telegram")}
@@ -697,16 +688,7 @@ export default function Home() {
                       </a>
                     ) : inProgress.telegram ? (
                       <div className="task-progress">
-                        <div className="task-progress-text">Verifying your Telegram join... ({timers.telegram}s)</div>
-                        <div className="task-progress-bar">
-                          <div
-                            className="task-progress-fill"
-                            style={{ width: `${(timers.telegram / 30) * 100}%` }}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-valuenow={(timers.telegram / 30) * 100}
-                          />
-                        </div>
+                        <div className="task-progress-text">Verifying your task completion...</div>
                       </div>
                     ) : (
                       <div className="task-completed-message">Telegram task completed!</div>
@@ -736,7 +718,7 @@ export default function Home() {
 
                     {!tasks.twitter && !inProgress.twitter ? (
                       <a
-                        href="https://twitter.com/codeclaim"
+                        href="https://x.com/code_claim?s=21"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => startTaskTimer("twitter")}
@@ -747,16 +729,7 @@ export default function Home() {
                       </a>
                     ) : inProgress.twitter ? (
                       <div className="task-progress">
-                        <div className="task-progress-text">Verifying your X follow... ({timers.twitter}s)</div>
-                        <div className="task-progress-bar">
-                          <div
-                            className="task-progress-fill"
-                            style={{ width: `${(timers.twitter / 30) * 100}%` }}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-valuenow={(timers.twitter / 30) * 100}
-                          />
-                        </div>
+                        <div className="task-progress-text">Verifying your task completion...</div>
                       </div>
                     ) : (
                       <div className="task-completed-message">X/Twitter task completed!</div>
