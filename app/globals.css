@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+}
+
+.terminal {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-header {
+  background-color: #0d1117;
+  color: #8b949e;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.window-control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.window-control-red {
+  background-color: #ff5f56;
+}
+
+.window-control-yellow {
+  background-color: #ffbd2e;
+}
+
+.window-control-green {
+  background-color: #27c93f;
+}
+
+.tab-bar {
+  display: flex;
+  background-color: #0d1117;
+  border-bottom: 1px solid #30363d;
+}
+
+.tab {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid #30363d;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+.tab.active {
+  background-color: #0d1117;
+  color: #e6edf3;
+  border-bottom: 1px solid #0d1117;
+  margin-bottom: -1px;
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.explorer {
+  width: 250px;
+  background-color: #0d1117;
+  border-right: 1px solid #30363d;
+  padding: 8px 0;
+  font-size: 14px;
+  overflow-y: auto;
+}
+
+.explorer-header {
+  padding: 0 16px;
+  margin-bottom: 8px;
+  color: #8b949e;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.explorer-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 8px;
+}
+
+.explorer-item.folder {
+  color: #e6edf3;
+}
+
+.explorer-item.file {
+  padding-left: 32px;
+}
+
+.explorer-item.active {
+  color: #e6edf3;
+}
+
+.code-container {
+  flex: 1;
+  background-color: #0d1117;
+  padding: 16px;
+  overflow: auto;
+}
+
+.terminal-prompt {
+  color: #7ee787;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.terminal-prompt span {
+  color: #8b949e;
+}
+
+.code-block {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.code-keyword {
+  color: #ff7b72;
+}
+
+.code-variable {
+  color: #79c0ff;
+}
+
+.code-string {
+  color: #a5d6ff;
+}
+
+.code-function {
+  color: #d2a8ff;
+}
+
+.code-property {
+  color: #79c0ff;
+}
+
+.code-operator {
+  color: #ff7b72;
+}
+
+.code-comment {
+  color: #8b949e;
+}
