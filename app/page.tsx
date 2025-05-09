@@ -468,11 +468,23 @@ export default function Home() {
           <span className="tab-text">referrals.js</span>
           {linkCopied && <div className="copied-tooltip">Referral link copied!</div>}
         </div>
-        <div className="tab">
-          <span className="tab-icon" style={{ color: "#d2a8ff" }}>
-            🪙
+        <div
+          className="tab"
+          onClick={() => setShowReadmePopup(true)}
+          role="button"
+          tabIndex={0}
+          aria-label="Open README file"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setShowReadmePopup(true)
+            }
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <span className="tab-icon" style={{ color: "#8b949e" }}>
+            📑
           </span>
-          <span className="tab-text">claim.js</span>
+          <span className="tab-text">README.md</span>
         </div>
       </div>
 
@@ -516,12 +528,6 @@ export default function Home() {
             </span>
             <span className="explorer-text">referrals.js</span>
             {linkCopied && <span className="copied-indicator">(copied!)</span>}
-          </div>
-          <div className="explorer-item explorer-item-child">
-            <span className="explorer-icon" style={{ color: "#f1e05a" }}>
-              📄
-            </span>
-            <span className="explorer-text">claim.js</span>
           </div>
           <div className="explorer-item">
             <span className="explorer-icon" style={{ color: "#8b949e" }}>
