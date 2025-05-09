@@ -432,16 +432,33 @@ export default function Home() {
           <div className="window-control window-control-yellow"></div>
           <div className="window-control window-control-green"></div>
         </div>
-        <div>codeclaim@dev:~$ ./start_dashboard.sh</div>
+        <div className="flex items-center gap-4">
+          <div>codeclaim@dev:~$ ./start_dashboard.sh</div>
+          <div className="px-2 py-1 text-sm border border-[#30363d] rounded cursor-pointer hover:bg-[#161b22]">
+            Retune Home
+          </div>
+        </div>
       </div>
 
       {/* Tab Bar */}
       <div className="tab-bar">
-        <div className="tab active">
+        <div
+          className="tab active"
+          onClick={() => setShowReadmePopup(true)}
+          role="button"
+          tabIndex={0}
+          aria-label="Open README file"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setShowReadmePopup(true)
+            }
+          }}
+          style={{ cursor: "pointer" }}
+        >
           <span className="tab-icon" style={{ color: "#539bf5" }}>
-            📄
+            📑
           </span>
-          <span className="tab-text">refer.earn</span>
+          <span className="tab-text readme-link">README.md</span>
         </div>
         <div className="tab">
           <span className="tab-icon" style={{ color: "#f0883e" }}>
@@ -467,24 +484,6 @@ export default function Home() {
           </span>
           <span className="tab-text">referrals.js</span>
           {linkCopied && <div className="copied-tooltip">Referral link copied!</div>}
-        </div>
-        <div
-          className="tab"
-          onClick={() => setShowReadmePopup(true)}
-          role="button"
-          tabIndex={0}
-          aria-label="Open README file"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              setShowReadmePopup(true)
-            }
-          }}
-          style={{ cursor: "pointer" }}
-        >
-          <span className="tab-icon" style={{ color: "#8b949e" }}>
-            📑
-          </span>
-          <span className="tab-text">README.md</span>
         </div>
       </div>
 
@@ -909,6 +908,13 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .readme-link {
+          color: #539bf5;
+          text-decoration: underline;
+        }
+      `}</style>
     </div>
   )
 }
