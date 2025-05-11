@@ -64,6 +64,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
+  const [loadedFromStorage, setLoadedFromStorage] = useState(false)
 
   // Loading states
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
@@ -81,6 +82,7 @@ export default function Home() {
     const savedTasks = localStorage.getItem("codeclaim_tasks")
     const savedUsername = localStorage.getItem("codeclaim_username")
     const savedWallet = localStorage.getItem("codeclaim_wallet")
+    const savedSubmissionStatus = localStorage.getItem("codeclaim_submitted")
 
     if (savedTasks) {
       try {
@@ -97,6 +99,12 @@ export default function Home() {
 
     if (savedWallet) {
       setWalletAddress(savedWallet)
+    }
+
+    // Check if the form was previously submitted
+    if (savedSubmissionStatus === "true") {
+      setFormSubmitted(true)
+      setLoadedFromStorage(true)
     }
   }, [])
 
@@ -361,10 +369,13 @@ export default function Home() {
           setReferralCount(referralStats.count)
         }
 
-        // Clear saved form data on successful submission
-        localStorage.removeItem("codeclaim_tasks")
-        localStorage.removeItem("codeclaim_username")
-        localStorage.removeItem("codeclaim_wallet")
+        // Save submission status to localStorage
+        localStorage.setItem("codeclaim_submitted", "true")
+
+        // Don't clear these values anymore so they can be displayed on the success screen
+        // Instead of removing, just keep them for display purposes
+        localStorage.setItem("codeclaim_username", username)
+        localStorage.setItem("codeclaim_wallet", walletAddress)
 
         setFormSubmitted(true)
       } else {
@@ -415,6 +426,29 @@ export default function Home() {
       document.body.removeChild(textArea)
     }
   }, [username])
+
+  const resetForm = useCallback(() => {
+    // Clear localStorage
+    localStorage.removeItem("codeclaim_tasks")
+    localStorage.removeItem("codeclaim_username")
+    localStorage.removeItem("codeclaim_wallet")
+    localStorage.removeItem("codeclaim_submitted")
+    localStorage.removeItem("codeclaim_referral_count")
+
+    // Reset state
+    setFormSubmitted(false)
+    setTasks({
+      discord: false,
+      telegram: false,
+      twitter: false,
+    })
+    setUsername("")
+    setWalletAddress("")
+    setUserId(null)
+
+    // Force page reload to reset everything
+    window.location.reload()
+  }, [])
 
   // Persist referral count in localStorage
   useEffect(() => {
@@ -630,6 +664,14 @@ export default function Home() {
               <p className="success-message">
                 Thank you for joining the Codeclaim waitlist. We'll notify you when we launch!
               </p>
+              {/* Hidden reset button for testing - can be removed in production */}
+              <button
+                onClick={resetForm}
+                className="mt-4 text-xs text-gray-600 hover:text-gray-400 opacity-50"
+                style={{ fontSize: "10px" }}
+              >
+                Reset Form (Testing Only)
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="task-interface" aria-label="Waitlist registration form">
