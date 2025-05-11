@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import {
   registerUserWithTasks,
   recordCompletedTask,
@@ -26,6 +26,8 @@ type FormErrors = {
 }
 
 export default function Home() {
+  const router = useRouter()
+
   // Get referrer from URL query params
   const searchParams = useSearchParams()
   const referrer = searchParams.get("ref")
@@ -65,6 +67,7 @@ export default function Home() {
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [formErrors, setFormErrors] = useState<FormErrors>({})
   const [loadedFromStorage, setLoadedFromStorage] = useState(false)
+  const [isRefreshingStats, setIsRefreshingStats] = useState(false)
 
   // Loading states
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
@@ -73,6 +76,8 @@ export default function Home() {
 
   // Timer ref for cleanup
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  // Interval ref for refreshing referral stats
+  const statsRefreshRef = useRef<NodeJS.Timeout | null>(null)
 
   // Check if all tasks are completed
   const allTasksCompleted = tasks.discord && tasks.telegram && tasks.twitter
@@ -83,6 +88,7 @@ export default function Home() {
     const savedUsername = localStorage.getItem("codeclaim_username")
     const savedWallet = localStorage.getItem("codeclaim_wallet")
     const savedSubmissionStatus = localStorage.getItem("codeclaim_submitted")
+    const savedUserId = localStorage.getItem("codeclaim_user_id")
 
     if (savedTasks) {
       try {
@@ -99,6 +105,10 @@ export default function Home() {
 
     if (savedWallet) {
       setWalletAddress(savedWallet)
+    }
+
+    if (savedUserId) {
+      setUserId(savedUserId)
     }
 
     // Check if the form was previously submitted
@@ -285,6 +295,7 @@ export default function Home() {
           const result = await getReferralStats(username)
           if (result.success) {
             setReferralCount(result.count)
+            localStorage.setItem("codeclaim_referral_count", result.count.toString())
           }
         } catch (error) {
           console.error("Error fetching referral stats:", error)
@@ -294,10 +305,65 @@ export default function Home() {
       }
     }
 
-    if (username && userId) {
+    if (username && (userId || formSubmitted)) {
       fetchReferralStats()
     }
-  }, [username, userId, formErrors.username])
+  }, [username, userId, formErrors.username, formSubmitted])
+
+  // Set up periodic refresh of referral stats after submission
+  useEffect(() => {
+    if (formSubmitted && username) {
+      // Clear any existing refresh interval
+      if (statsRefreshRef.current) {
+        clearInterval(statsRefreshRef.current)
+      }
+
+      // Set up a new refresh interval (every 30 seconds)
+      statsRefreshRef.current = setInterval(async () => {
+        if (!isRefreshingStats) {
+          setIsRefreshingStats(true)
+          try {
+            const result = await getReferralStats(username)
+            if (result.success) {
+              setReferralCount(result.count)
+              localStorage.setItem("codeclaim_referral_count", result.count.toString())
+            }
+          } catch (error) {
+            console.error("Error refreshing referral stats:", error)
+          } finally {
+            setIsRefreshingStats(false)
+          }
+        }
+      }, 30000) // Refresh every 30 seconds
+
+      // Initial fetch
+      refreshReferralStats()
+    }
+
+    return () => {
+      if (statsRefreshRef.current) {
+        clearInterval(statsRefreshRef.current)
+      }
+    }
+  }, [formSubmitted, username])
+
+  // Function to manually refresh referral stats
+  const refreshReferralStats = async () => {
+    if (username && !isRefreshingStats) {
+      setIsRefreshingStats(true)
+      try {
+        const result = await getReferralStats(username)
+        if (result.success) {
+          setReferralCount(result.count)
+          localStorage.setItem("codeclaim_referral_count", result.count.toString())
+        }
+      } catch (error) {
+        console.error("Error refreshing referral stats:", error)
+      } finally {
+        setIsRefreshingStats(false)
+      }
+    }
+  }
 
   // Start task timer
   const startTaskTimer = useCallback(
@@ -362,11 +428,13 @@ export default function Home() {
 
       if (result.success && result.userId) {
         setUserId(result.userId)
+        localStorage.setItem("codeclaim_user_id", result.userId)
 
         // Get updated referral stats
         const referralStats = await getReferralStats(username)
         if (referralStats.success) {
           setReferralCount(referralStats.count)
+          localStorage.setItem("codeclaim_referral_count", referralStats.count.toString())
         }
 
         // Save submission status to localStorage
@@ -377,7 +445,20 @@ export default function Home() {
         localStorage.setItem("codeclaim_username", username)
         localStorage.setItem("codeclaim_wallet", walletAddress)
 
+        // If there was a referrer, store it
+        if (referrer) {
+          localStorage.setItem("codeclaim_referrer", referrer)
+        }
+
         setFormSubmitted(true)
+
+        // Update URL to include username as a query param to help with tracking
+        // This doesn't cause a page reload but helps with analytics
+        if (username) {
+          const url = new URL(window.location.href)
+          url.searchParams.set("user", username)
+          window.history.replaceState({}, "", url.toString())
+        }
       } else {
         setFormErrors({
           general: result.error || "Failed to register. Please try again.",
@@ -434,6 +515,7 @@ export default function Home() {
     localStorage.removeItem("codeclaim_wallet")
     localStorage.removeItem("codeclaim_submitted")
     localStorage.removeItem("codeclaim_referral_count")
+    localStorage.removeItem("codeclaim_user_id")
 
     // Reset state
     setFormSubmitted(false)
@@ -641,7 +723,17 @@ export default function Home() {
               </div>
 
               <div className="referral-stats-container">
-                <h3 className="referral-stats-title">Your Referral Stats</h3>
+                <h3 className="referral-stats-title">
+                  Your Referral Stats
+                  <button
+                    onClick={refreshReferralStats}
+                    className="ml-2 text-xs text-blue-400 hover:text-blue-300"
+                    disabled={isRefreshingStats}
+                    title="Refresh referral stats"
+                  >
+                    {isRefreshingStats ? "Refreshing..." : "↻ Refresh"}
+                  </button>
+                </h3>
                 <div className="referral-stats-box">
                   <div className="referral-stats-content">
                     <div>

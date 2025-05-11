@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 
 type TaskType = "discord" | "telegram" | "twitter"
 
-// Register a new user and record completed tasks in a single operation
+// Update the registerUserWithTasks function to better handle referrals
 export async function registerUserWithTasks(
   username: string,
   walletAddress: string,
@@ -100,11 +100,23 @@ export async function registerUserWithTasks(
 
       // If there's a referrer, increment their referral count
       if (referrerUsername) {
-        const { error: referralError } = await incrementReferralCount(referrerUsername)
+        // First check if referrer exists
+        const { data: referrerData, error: referrerCheckError } = await supabase
+          .from("waitlist")
+          .select("id")
+          .eq("username", referrerUsername)
+          .maybeSingle()
 
-        if (referralError) {
-          console.error("Error incrementing referral count:", referralError)
-          // We don't fail the whole operation if just the referral count update fails
+        if (!referrerCheckError && referrerData) {
+          // Referrer exists, increment their count
+          const { error: referralError } = await incrementReferralCount(referrerUsername)
+
+          if (referralError) {
+            console.error("Error incrementing referral count:", referralError)
+            // We don't fail the whole operation if just the referral count update fails
+          }
+        } else {
+          console.log("Referrer not found:", referrerUsername)
         }
       }
     }
@@ -157,36 +169,66 @@ export async function recordCompletedTask(userId: string, taskType: TaskType) {
   }
 }
 
-// Increment referral count for a user
+// Update the incrementReferralCount function to be more robust
 async function incrementReferralCount(username: string) {
   try {
     const supabase = getServerSide()
 
-    const { error } = await supabase.rpc("increment_referral_count", { username_param: username })
+    // First try using a direct update with a counter increment
+    const { data, error } = await supabase
+      .from("waitlist")
+      .update({ referral_count: supabase.sql`referral_count + 1` })
+      .eq("username", username)
+      .select("referral_count")
+      .single()
 
-    // If the RPC function doesn't exist, fall back to a direct update
-    if (error && error.message.includes("does not exist")) {
+    if (error) {
+      console.error("Error incrementing referral count with direct update:", error)
+
+      // Fallback: Get current count and increment
+      const { data: currentData, error: getError } = await supabase
+        .from("waitlist")
+        .select("referral_count")
+        .eq("username", username)
+        .single()
+
+      if (getError) {
+        return { error: getError }
+      }
+
+      const newCount = (currentData?.referral_count || 0) + 1
+
       const { error: updateError } = await supabase
         .from("waitlist")
-        .update({ referral_count: supabase.sql`referral_count + 1` })
+        .update({ referral_count: newCount })
         .eq("username", username)
 
       if (updateError) {
         return { error: updateError }
       }
-    } else if (error) {
-      return { error }
+
+      return { success: true, count: newCount }
     }
 
-    return { success: true }
+    return { success: true, count: data?.referral_count }
   } catch (error) {
+    console.error("Error in incrementReferralCount:", error)
     return { error }
   }
 }
 
-// Get referral stats for a user
+// Update the getReferralStats function to be more reliable
 export async function getReferralStats(username: string) {
   try {
+    if (!username) {
+      return {
+        success: false,
+        error: "Username is required",
+        code: "VALIDATION_ERROR",
+        count: 0,
+      }
+    }
+
     const supabase = getServerSide()
 
     const { data, error } = await supabase
@@ -206,7 +248,11 @@ export async function getReferralStats(username: string) {
       }
     }
 
-    return { success: true, count: data?.referral_count || 0 }
+    return {
+      success: true,
+      count: data?.referral_count || 0,
+      message: "Referral stats retrieved successfully",
+    }
   } catch (error) {
     console.error("Error getting referral stats:", error)
     return {
