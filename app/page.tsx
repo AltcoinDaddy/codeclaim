@@ -384,14 +384,7 @@ export default function Home() {
 
   // Copy referral link to clipboard
   const copyReferralLink = useCallback(() => {
-    if (!username) {
-      setFormErrors((prev) => ({
-        ...prev,
-        username: "Please enter a username first to generate a referral link",
-      }))
-      return
-    }
-
+    // Remove the username requirement check
     const referralLink = `${window.location.origin}${window.location.pathname}${username ? `?ref=${username}` : ""}`
 
     try {
@@ -422,6 +415,36 @@ export default function Home() {
       document.body.removeChild(textArea)
     }
   }, [username])
+
+  // Persist referral count in localStorage
+  useEffect(() => {
+    if (referralCount > 0) {
+      localStorage.setItem("codeclaim_referral_count", referralCount.toString())
+    }
+  }, [referralCount])
+
+  // Load referral count from localStorage on initial render
+  useEffect(() => {
+    const savedReferralCount = localStorage.getItem("codeclaim_referral_count")
+    if (savedReferralCount) {
+      setReferralCount(Number.parseInt(savedReferralCount, 10))
+    }
+  }, [])
+
+  // Check for referrer and update localStorage if needed
+  useEffect(() => {
+    if (referrer) {
+      // Store the referrer in localStorage to persist across sessions
+      localStorage.setItem("codeclaim_referrer", referrer)
+
+      // If this is a new visit with a referrer, increment a local count
+      const visitedReferrers = JSON.parse(localStorage.getItem("codeclaim_visited_referrers") || "[]")
+      if (!visitedReferrers.includes(referrer)) {
+        visitedReferrers.push(referrer)
+        localStorage.setItem("codeclaim_visited_referrers", JSON.stringify(visitedReferrers))
+      }
+    }
+  }, [referrer])
 
   return (
     <div className="terminal">
@@ -798,7 +821,15 @@ export default function Home() {
                       📋
                     </button>
                   </div>
-                  <p className="referral-description">Share this link with friends to earn rewards when they join!</p>
+                  <p className="referral-description">
+                    Share this link with friends to earn rewards when they join!
+                    {!username && (
+                      <span className="text-amber-500">
+                        {" "}
+                        Add a username to personalize your referral link (optional).
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
 
