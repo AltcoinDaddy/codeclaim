@@ -427,16 +427,23 @@ export default function Home() {
     <div className="terminal">
       {/* Terminal Header */}
       <div className="terminal-header">
-        <div className="window-controls">
-          <div className="window-control window-control-red"></div>
-          <div className="window-control window-control-yellow"></div>
-          <div className="window-control window-control-green"></div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div>codeclaim@dev:~$ ./start_dashboard.sh</div>
-          <div className="px-2 py-1 text-sm border border-[#30363d] rounded cursor-pointer hover:bg-[#161b22]">
-            Retune Home
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-4">
+            <div className="window-controls">
+              <div className="window-control window-control-red"></div>
+              <div className="window-control window-control-yellow"></div>
+              <div className="window-control window-control-green"></div>
+            </div>
+            <div>codeclaim@dev:~$ ./start_dashboard.sh</div>
           </div>
+          <a
+            href="https://www.codeclaim.club/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2 py-1 text-sm border border-[#30363d] rounded cursor-pointer hover:bg-[#161b22]"
+          >
+            Retune Home
+          </a>
         </div>
       </div>
 
