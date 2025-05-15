@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss"
-
 const config = {
   darkMode: ["class"],
   content: [
@@ -53,6 +52,18 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        terminal: {
+          background: "var(--bg-primary)",
+          foreground: "var(--text-secondary)",
+          accent: "var(--accent-primary)",
+          border: "var(--border-color)",
+        },
+        code: {
+          keyword: "var(--syntax-keyword)",
+          string: "var(--syntax-string)",
+          number: "var(--syntax-number)",
+          comment: "var(--syntax-comment)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -60,8 +71,20 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        mono: ["var(--font-mono)"],
+        sans: [
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Oxygen",
+          "Ubuntu",
+          "Cantarell",
+          "Open Sans",
+          "Helvetica Neue",
+          "sans-serif",
+        ],
+        mono: ["Menlo", "Monaco", "Courier New", "monospace"],
       },
       keyframes: {
         "accordion-down": {
@@ -72,10 +95,28 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 0 0 rgba(0, 255, 194, 0.4)",
+          },
+          "50%": {
+            boxShadow: "0 0 0 8px rgba(0, 255, 194, 0)",
+          },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s infinite",
+        float: "float 6s ease-in-out infinite",
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "terminal-glow": "radial-gradient(circle at 50% 50%, rgba(0, 255, 194, 0.15), transparent 70%)",
       },
     },
   },

@@ -11,6 +11,21 @@ import {
   checkUserExists,
   validateWalletAddress,
 } from "./actions"
+import {
+  Terminal,
+  Code,
+  Github,
+  Share2,
+  RefreshCw,
+  Copy,
+  CheckCircle,
+  ExternalLink,
+  Home,
+  MessageSquare,
+  Twitter,
+  Wallet,
+  ChevronRight,
+} from "lucide-react"
 
 // Types for task management
 type TaskId = "discord" | "telegram" | "twitter"
@@ -25,7 +40,7 @@ type FormErrors = {
   general?: string
 }
 
-export default function Home() {
+export default function Page() {
   const router = useRouter()
 
   // Get referrer from URL query params
@@ -568,20 +583,22 @@ export default function Home() {
       <div className="terminal-header">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
-            <div className="window-controls">
-              <div className="window-control window-control-red"></div>
-              <div className="window-control window-control-yellow"></div>
-              <div className="window-control window-control-green"></div>
+            <div className="logo-container">
+              <img src="/images/code_logo.png" alt="CodeClaim Logo" className="h-8 w-8" />
             </div>
-            <div>codeclaim@dev:~$ ./start_dashboard.sh</div>
+            <div className="flex items-center">
+              <Terminal className="h-4 w-4 mr-2 text-[rgb(0,255,194)]" />
+              <span className="font-mono">CodeClaim</span>
+            </div>
           </div>
           <a
             href="https://www.codeclaim.club/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-2 py-1 text-sm border border-[#30363d] rounded cursor-pointer hover:bg-[#161b22]"
+            className="px-3 py-1.5 text-sm border border-[rgb(0,255,194)] rounded cursor-pointer hover:bg-[rgba(0,255,194,0.1)] text-[rgb(0,255,194)] transition-all duration-200 flex items-center gap-1"
           >
-            Retune Home
+            <Home className="h-3.5 w-3.5" />
+            <span>Retune Home</span>
           </a>
         </div>
       </div>
@@ -601,15 +618,11 @@ export default function Home() {
           }}
           style={{ cursor: "pointer" }}
         >
-          <span className="tab-icon" style={{ color: "#539bf5" }}>
-            📑
-          </span>
+          <Code className="h-4 w-4 text-[rgb(0,255,194)]" />
           <span className="tab-text readme-link">README.md</span>
         </div>
         <div className="tab">
-          <span className="tab-icon" style={{ color: "#f0883e" }}>
-            💰
-          </span>
+          <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
           <span className="tab-text">earn.token</span>
         </div>
         <div
@@ -625,9 +638,7 @@ export default function Home() {
             }
           }}
         >
-          <span className="tab-icon" style={{ color: "#7ee787" }}>
-            🔗
-          </span>
+          <Code className="h-4 w-4 text-[rgb(0,255,194)]" />
           <span className="tab-text">referrals.js</span>
           {linkCopied && <div className="copied-tooltip">Referral link copied!</div>}
         </div>
@@ -639,21 +650,15 @@ export default function Home() {
         <div className="explorer">
           <div className="explorer-header">EXPLORER</div>
           <div className="explorer-item">
-            <span className="explorer-icon" style={{ color: "#e34c26" }}>
-              📂
-            </span>
-            <span className="explorer-text">reward</span>
+            <Github className="h-4 w-4 text-[rgb(0,255,194)]" />
+            <span className="explorer-text">contrib-chain</span>
           </div>
           <div className="explorer-item explorer-item-child">
-            <span className="explorer-icon" style={{ color: "#f1e05a" }}>
-              📄
-            </span>
+            <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
             <span className="explorer-text explorer-text-active">refer.earn</span>
           </div>
           <div className="explorer-item explorer-item-child">
-            <span className="explorer-icon" style={{ color: "#f1e05a" }}>
-              📄
-            </span>
+            <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
             <span className="explorer-text">earn.token</span>
           </div>
           <div
@@ -668,16 +673,12 @@ export default function Home() {
               }
             }}
           >
-            <span className="explorer-icon" style={{ color: "#f1e05a" }}>
-              📄
-            </span>
+            <Code className="h-4 w-4 text-[rgb(0,255,194)]" />
             <span className="explorer-text">referrals.js</span>
             {linkCopied && <span className="copied-indicator">(copied!)</span>}
           </div>
           <div className="explorer-item">
-            <span className="explorer-icon" style={{ color: "#8b949e" }}>
-              📄
-            </span>
+            <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
             <span className="explorer-text">config.json</span>
           </div>
           <div
@@ -692,9 +693,7 @@ export default function Home() {
               }
             }}
           >
-            <span className="explorer-icon" style={{ color: "#8b949e" }}>
-              📄
-            </span>
+            <Code className="h-4 w-4 text-[rgb(0,255,194)]" />
             <span className="explorer-text explorer-text-link">README.md</span>
           </div>
         </div>
@@ -727,11 +726,12 @@ export default function Home() {
                   Your Referral Stats
                   <button
                     onClick={refreshReferralStats}
-                    className="ml-2 text-xs text-blue-400 hover:text-blue-300"
+                    className="ml-2 text-xs text-[rgb(0,255,194)] hover:text-[rgb(0,230,175)] flex items-center gap-1"
                     disabled={isRefreshingStats}
                     title="Refresh referral stats"
                   >
-                    {isRefreshingStats ? "Refreshing..." : "↻ Refresh"}
+                    <RefreshCw className={`h-3.5 w-3.5 ${isRefreshingStats ? "animate-spin" : ""}`} />
+                    {isRefreshingStats ? "Refreshing..." : "Refresh"}
                   </button>
                 </h3>
                 <div className="referral-stats-box">
@@ -746,6 +746,7 @@ export default function Home() {
                         className="referral-copy-button"
                         aria-label="Copy referral link"
                       >
+                        <Copy className="h-4 w-4" />
                         Copy Referral Link
                       </button>
                     </div>
@@ -754,7 +755,7 @@ export default function Home() {
               </div>
 
               <p className="success-message">
-                Thank you for joining the Codeclaim waitlist. We'll notify you when we launch!
+                Thank you for joining the ContribChain waitlist. We'll notify you when we launch!
               </p>
               {/* Hidden reset button for testing - can be removed in production */}
               <button
@@ -771,7 +772,7 @@ export default function Home() {
 
               {formErrors.general && (
                 <div className="form-error-message" role="alert">
-                  {formErrors.general}
+                  <div className="pl-6">{formErrors.general}</div>
                 </div>
               )}
 
@@ -800,7 +801,7 @@ export default function Home() {
                       <span className={`task-number ${tasks.discord ? "task-completed" : ""}`}>
                         {tasks.discord ? "✓" : "1."}
                       </span>
-                      Join Codeclaim on Discord
+                      Join ContribChain on Discord
                     </label>
 
                     {!tasks.discord && !inProgress.discord ? (
@@ -812,7 +813,11 @@ export default function Home() {
                         className="task-button"
                         aria-label="Join Discord"
                       >
-                        Click to Join Discord
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Click to Join Discord
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </span>
                       </a>
                     ) : inProgress.discord ? (
                       <div className="task-progress">
@@ -841,7 +846,7 @@ export default function Home() {
                       <span className={`task-number ${tasks.telegram ? "task-completed" : ""}`}>
                         {tasks.telegram ? "✓" : "2."}
                       </span>
-                      Join Codeclaim on Telegram
+                      Join ContribChain on Telegram
                     </label>
 
                     {!tasks.telegram && !inProgress.telegram ? (
@@ -853,7 +858,11 @@ export default function Home() {
                         className="task-button"
                         aria-label="Join Telegram"
                       >
-                        Click to Join Telegram
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Click to Join Telegram
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </span>
                       </a>
                     ) : inProgress.telegram ? (
                       <div className="task-progress">
@@ -882,7 +891,7 @@ export default function Home() {
                       <span className={`task-number ${tasks.twitter ? "task-completed" : ""}`}>
                         {tasks.twitter ? "✓" : "3."}
                       </span>
-                      Follow Codeclaim on X
+                      Follow ContribChain on X
                     </label>
 
                     {!tasks.twitter && !inProgress.twitter ? (
@@ -894,7 +903,11 @@ export default function Home() {
                         className="task-button"
                         aria-label="Follow on X/Twitter"
                       >
-                        Click to Follow on X
+                        <span className="flex items-center gap-1">
+                          <Twitter className="h-3.5 w-3.5" />
+                          Click to Follow on X
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </span>
                       </a>
                     ) : inProgress.twitter ? (
                       <div className="task-progress">
@@ -909,7 +922,9 @@ export default function Home() {
 
               <div className="referral-section">
                 <div className="referral-header">
-                  <span className="referral-icon">↗</span>
+                  <span className="referral-icon">
+                    <Share2 className="h-4 w-4" />
+                  </span>
                   <span className="referral-title">Share your referral link</span>
                   <span className="referral-hint">(click referrals.js to copy)</span>
                 </div>
@@ -952,13 +967,13 @@ export default function Home() {
                       className="referral-copy-icon"
                       aria-label="Copy referral link"
                     >
-                      📋
+                      <Copy className="h-4 w-4" />
                     </button>
                   </div>
                   <p className="referral-description">
                     Share this link with friends to earn rewards when they join!
                     {!username && (
-                      <span className="text-amber-500">
+                      <span className="text-[rgb(0,230,175)]">
                         {" "}
                         Add a username to personalize your referral link (optional).
                       </span>
@@ -970,7 +985,9 @@ export default function Home() {
               {/* Wallet Address Input */}
               <div className="wallet-section">
                 <div className="wallet-header">
-                  <span className={`wallet-icon ${allTasksCompleted ? "wallet-ready" : ""}`}>💼</span>
+                  <span className={`wallet-icon ${allTasksCompleted ? "wallet-ready" : ""}`}>
+                    <Wallet className="h-4 w-4" />
+                  </span>
                   <span className={`wallet-title ${allTasksCompleted ? "wallet-ready" : ""}`}>
                     Submit Your Wallet Address
                   </span>
@@ -1034,7 +1051,11 @@ export default function Home() {
                     Submitting...
                   </>
                 ) : (
-                  "Submit"
+                  <span className="flex items-center justify-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Submit
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
                 )}
               </button>
             </form>
@@ -1047,46 +1068,42 @@ export default function Home() {
         <div className="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="readme-title">
           <div className="popup-content">
             <h2 id="readme-title" className="popup-title">
-              User Engagement Reward Program
+              ContribChain: Open Source Contribution Rewards
             </h2>
 
             <p className="popup-text">
-              We're launching a reward program to recognize active GitHub and Telegram users based on key activity
-              metrics.
+              ContribChain is launching a reward program to recognize active GitHub and Telegram users based on their
+              open-source contributions and community engagement.
             </p>
 
             <h3 className="popup-subtitle">GitHub Rewards</h3>
             <p className="popup-text">
               GitHub Rewards are based on account age, number of public repositories, commit/push/pull activity, and
-              overall contribution history.
+              overall contribution history. Contributors will earn tokens proportional to their impact.
             </p>
 
             <h3 className="popup-subtitle">Telegram Rewards</h3>
             <p className="popup-text">
               Telegram Rewards are based on account age, the number of communities managed or moderated, engagement
-              within those communities, and user interaction levels.
+              within those communities, and user interaction levels. Active community members will be rewarded.
             </p>
 
             <p className="popup-text">
               Additional factors like consistency, influence, and contribution quality may also be considered to ensure
-              fair and meaningful rewards.
+              fair and meaningful rewards. Our algorithm analyzes multiple metrics to determine token allocation.
             </p>
 
             <div className="popup-actions">
               <button onClick={() => setShowReadmePopup(false)} className="popup-close-button" aria-label="Close popup">
-                Close
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Close
+                </span>
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .readme-link {
-          color: #539bf5;
-          text-decoration: underline;
-        }
-      `}</style>
     </div>
   )
 }
