@@ -6,8 +6,11 @@ export const metadata: Metadata = {
   title: "CodeClaim Waitlist",
   description: "Join the CodeClaim waitlist and earn rewards for your open source contributions",
   icons: {
-    icon: "/images/code_logo.png",
-    apple: "/images/code_logo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/code_logo_new.png", type: "image/png" },
+    ],
+    apple: { url: "/images/code_logo_new.png", type: "image/png" },
   },
     generator: 'v0.dev'
 }
@@ -19,6 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" href="/images/code_logo_new.png" type="image/png" />
+      </head>
       <body>{children}</body>
     </html>
   )
