@@ -678,12 +678,9 @@ export default function Page() {
           <div className="explorer-header">EXPLORER</div>
           <div className="explorer-item">
             <Github className="h-4 w-4 text-[rgb(0,255,194)]" />
-            <span className="explorer-text">contrib-chain</span>
+            <span className="explorer-text">CodeClaim</span>
           </div>
-          <div className="explorer-item explorer-item-child">
-            <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
-            <span className="explorer-text explorer-text-active">refer.earn</span>
-          </div>
+          
           <div className="explorer-item explorer-item-child">
             <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
             <span className="explorer-text">earn.token</span>
