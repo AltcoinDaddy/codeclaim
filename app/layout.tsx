@@ -3,8 +3,12 @@ import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Codeclaim Waitlist",
-  description: "Join the Codeclaim waitlist and earn rewards for your open source contributions",
+  title: "CodeClaim Waitlist",
+  description: "Join the CodeClaim waitlist and earn rewards for your open source contributions",
+  icons: {
+    icon: "/images/code_logo.png",
+    apple: "/images/code_logo.png",
+  },
     generator: 'v0.dev'
 }
 
