@@ -578,9 +578,36 @@ export default function Page() {
   }, [referrer])
 
   return (
-    <div className="terminal">
-      {/* Terminal Header */}
-      <div className="terminal-header">
+    <div className="terminal relative">
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 bg-black z-0"></div>
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-[#161b22] rounded-bl-[30%] opacity-10"></div>
+          <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-[rgb(var(--accent-color))] rounded-tr-[50%] opacity-5"></div>
+          <div className="absolute top-1/4 left-1/4 w-1/2 h-1/2 border border-[#30363d] rounded-full opacity-10"></div>
+          <div className="absolute top-1/3 right-1/3 w-1/4 h-1/4 border border-[rgb(var(--accent-color))] rounded-full opacity-10"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-1/3 h-1/3 border border-[#30363d] rounded-full opacity-5"></div>
+          <div className="grid grid-cols-12 grid-rows-6 gap-4 h-full w-full p-8 opacity-5">
+            {Array(20)
+              .fill(0)
+              .map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1 h-1 bg-[rgb(var(--accent-color))] rounded-full absolute"
+                  style={{
+                    top: `${Math.random() * 100}%`,
+                    left: `${Math.random() * 100}%`,
+                  }}
+                ></div>
+              ))}
+          </div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-[#30363d] rotate-45 opacity-20"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-[rgb(var(--accent-color))] rotate-45 opacity-10"></div>
+        </div>
+      </div>
+
+      {/* Terminal Header - Make sure it's above the overlay */}
+      <div className="terminal-header relative z-10">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
             <div className="logo-container">
@@ -603,8 +630,8 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Tab Bar */}
-      <div className="tab-bar">
+      {/* Tab Bar - Make sure it's above the overlay */}
+      <div className="tab-bar relative z-10">
         <div
           className="tab active"
           onClick={() => setShowReadmePopup(true)}
@@ -644,8 +671,8 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Main Container */}
-      <div className="main-container">
+      {/* Main Container - Make sure it's above the overlay */}
+      <div className="main-container relative z-10">
         {/* Explorer */}
         <div className="explorer">
           <div className="explorer-header">EXPLORER</div>
@@ -755,7 +782,7 @@ export default function Page() {
               </div>
 
               <p className="success-message">
-                Thank you for joining the ContribChain waitlist. We'll notify you when we launch!
+                Thank you for joining the CodeClaim waitlist. We'll notify you when we launch!
               </p>
               {/* Hidden reset button for testing - can be removed in production */}
               <button
@@ -801,7 +828,7 @@ export default function Page() {
                       <span className={`task-number ${tasks.discord ? "task-completed" : ""}`}>
                         {tasks.discord ? "✓" : "1."}
                       </span>
-                      Join ContribChain on Discord
+                      Join CodeClaim on Discord
                     </label>
 
                     {!tasks.discord && !inProgress.discord ? (
@@ -846,7 +873,7 @@ export default function Page() {
                       <span className={`task-number ${tasks.telegram ? "task-completed" : ""}`}>
                         {tasks.telegram ? "✓" : "2."}
                       </span>
-                      Join ContribChain on Telegram
+                      Join CodeClaim on Telegram
                     </label>
 
                     {!tasks.telegram && !inProgress.telegram ? (
@@ -891,7 +918,7 @@ export default function Page() {
                       <span className={`task-number ${tasks.twitter ? "task-completed" : ""}`}>
                         {tasks.twitter ? "✓" : "3."}
                       </span>
-                      Follow ContribChain on X
+                      Follow CodeClaim on X
                     </label>
 
                     {!tasks.twitter && !inProgress.twitter ? (
@@ -1068,11 +1095,11 @@ export default function Page() {
         <div className="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="readme-title">
           <div className="popup-content">
             <h2 id="readme-title" className="popup-title">
-              ContribChain: Open Source Contribution Rewards
+              CodeClaim: Open Source Contribution Rewards
             </h2>
 
             <p className="popup-text">
-              ContribChain is launching a reward program to recognize active GitHub and Telegram users based on their
+              CodeClaim is launching a reward program to recognize active GitHub and Telegram users based on their
               open-source contributions and community engagement.
             </p>
 
@@ -1082,11 +1109,7 @@ export default function Page() {
               overall contribution history. Contributors will earn tokens proportional to their impact.
             </p>
 
-            <h3 className="popup-subtitle">Telegram Rewards</h3>
-            <p className="popup-text">
-              Telegram Rewards are based on account age, the number of communities managed or moderated, engagement
-              within those communities, and user interaction levels. Active community members will be rewarded.
-            </p>
+            
 
             <p className="popup-text">
               Additional factors like consistency, influence, and contribution quality may also be considered to ensure

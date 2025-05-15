@@ -44,7 +44,7 @@ export function WaitlistTasks({ className, onComplete }: WaitlistTasksProps) {
     {
       id: "discord",
       title: "Join Discord",
-      description: "Join our Discord community for updates and discussions",
+      description: "Join our CodeClaim Discord community for updates and discussions",
       icon: Discord,
       buttonText: "Join Discord",
       url: "https://discord.gg/codeclaim",
@@ -52,7 +52,7 @@ export function WaitlistTasks({ className, onComplete }: WaitlistTasksProps) {
     {
       id: "telegram",
       title: "Join Telegram",
-      description: "Join our Telegram channel for important announcements",
+      description: "Join our CodeClaim Telegram channel for important announcements",
       icon: MessageSquare,
       buttonText: "Join Telegram",
       url: "https://t.me/codeclaim",
@@ -60,7 +60,7 @@ export function WaitlistTasks({ className, onComplete }: WaitlistTasksProps) {
     {
       id: "twitter",
       title: "Follow on X/Twitter",
-      description: "Follow us on X/Twitter and retweet our pinned post",
+      description: "Follow CodeClaim on X/Twitter and retweet our pinned post",
       icon: Twitter,
       buttonText: "Follow on X",
       url: "https://twitter.com/codeclaim",
@@ -202,7 +202,7 @@ console.log(\`All tasks completed: \${allCompleted}\`);
           <div className="bg-[#1e1e1e] border border-[#30363d] rounded-md p-6">
             <h3 className="text-xl font-bold mb-4 text-green-500">Successfully Joined Waitlist!</h3>
             <p className="text-gray-300 mb-4">
-              Thank you for joining the Codeclaim waitlist. We'll notify you when we launch.
+              Thank you for joining the CodeClaim waitlist. We'll notify you when we launch.
             </p>
             <div className="bg-[#0d1117] border border-[#30363d] rounded-md p-4 font-mono text-sm mb-4">
               <div className="text-green-500">
