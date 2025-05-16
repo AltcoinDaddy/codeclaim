@@ -408,10 +408,8 @@ export default function Page() {
     let hasErrors = false
     const newErrors: FormErrors = {}
 
-    if (!username) {
-      newErrors.username = "Username is required"
-      hasErrors = true
-    } else if (username.length < 3) {
+    // Username is now optional, so we only validate if it's provided
+    if (username && username.length < 3) {
       newErrors.username = "Username must be at least 3 characters"
       hasErrors = true
     }
@@ -439,14 +437,20 @@ export default function Page() {
 
     try {
       // Register user with all tasks in a single operation
-      const result = await registerUserWithTasks(username, walletAddress, tasks, referrer || undefined)
+      // Pass null if username is empty
+      const result = await registerUserWithTasks(username.trim() || null, walletAddress, tasks, referrer || undefined)
 
       if (result.success && result.userId) {
         setUserId(result.userId)
         localStorage.setItem("codeclaim_user_id", result.userId)
 
+        // If a username was generated on the server, use that
+        if (result.username && !username) {
+          setUsername(result.username)
+        }
+
         // Get updated referral stats
-        const referralStats = await getReferralStats(username)
+        const referralStats = await getReferralStats(result.username || username)
         if (referralStats.success) {
           setReferralCount(referralStats.count)
           localStorage.setItem("codeclaim_referral_count", referralStats.count.toString())
@@ -457,7 +461,7 @@ export default function Page() {
 
         // Don't clear these values anymore so they can be displayed on the success screen
         // Instead of removing, just keep them for display purposes
-        localStorage.setItem("codeclaim_username", username)
+        localStorage.setItem("codeclaim_username", result.username || username)
         localStorage.setItem("codeclaim_wallet", walletAddress)
 
         // If there was a referrer, store it
@@ -469,9 +473,9 @@ export default function Page() {
 
         // Update URL to include username as a query param to help with tracking
         // This doesn't cause a page reload but helps with analytics
-        if (username) {
+        if (result.username || username) {
           const url = new URL(window.location.href)
-          url.searchParams.set("user", username)
+          url.searchParams.set("user", result.username || username)
           window.history.replaceState({}, "", url.toString())
         }
       } else {
@@ -680,7 +684,7 @@ export default function Page() {
             <Github className="h-4 w-4 text-[rgb(0,255,194)]" />
             <span className="explorer-text">CodeClaim</span>
           </div>
-          
+
           <div className="explorer-item explorer-item-child">
             <Code className="h-4 w-4 text-[rgb(0,230,175)]" />
             <span className="explorer-text">earn.token</span>
@@ -955,7 +959,7 @@ export default function Page() {
 
                 <div className="form-group">
                   <label htmlFor="username" className="form-label">
-                    Enter your preferred username:
+                    Enter your preferred username: <span className="text-xs text-gray-400">(optional)</span>
                   </label>
                   <div className="input-wrapper">
                     <input
@@ -1059,7 +1063,7 @@ export default function Page() {
                 disabled={
                   !allTasksCompleted ||
                   !walletAddress ||
-                  !username ||
+                  (username.length > 0 && username.length < 3) || // Only validate username if it's provided
                   !!formErrors.username ||
                   !!formErrors.wallet ||
                   isSubmitting ||
@@ -1105,8 +1109,6 @@ export default function Page() {
               GitHub Rewards are based on account age, number of public repositories, commit/push/pull activity, and
               overall contribution history. Contributors will earn tokens proportional to their impact.
             </p>
-
-            
 
             <p className="popup-text">
               Additional factors like consistency, influence, and contribution quality may also be considered to ensure

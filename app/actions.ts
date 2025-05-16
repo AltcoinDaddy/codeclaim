@@ -2,12 +2,13 @@
 
 import { getServerSide } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
+import { randomUUID } from "crypto"
 
 type TaskType = "discord" | "telegram" | "twitter"
 
-// Update the registerUserWithTasks function to better handle referrals
+// Update the registerUserWithTasks function to make username optional
 export async function registerUserWithTasks(
-  username: string,
+  username: string | null,
   walletAddress: string,
   tasks: { discord: boolean; telegram: boolean; twitter: boolean },
   referrerUsername?: string,
@@ -15,11 +16,14 @@ export async function registerUserWithTasks(
   try {
     const supabase = getServerSide()
 
+    // Generate a random username if none provided
+    const finalUsername = username || `user_${randomUUID().substring(0, 8)}`
+
     // Check if user already exists by username
     const { data: existingUser, error: checkError } = await supabase
       .from("waitlist")
       .select("id")
-      .eq("username", username)
+      .eq("username", finalUsername)
       .maybeSingle()
 
     if (checkError) {
@@ -65,7 +69,7 @@ export async function registerUserWithTasks(
       const { data, error: insertError } = await supabase
         .from("waitlist")
         .insert({
-          username,
+          username: finalUsername,
           wallet_address: walletAddress,
           referrer_username: referrerUsername,
           discord_completed: tasks.discord,
@@ -137,7 +141,7 @@ export async function registerUserWithTasks(
     }
 
     revalidatePath("/")
-    return { success: true, userId }
+    return { success: true, userId, username: finalUsername }
   } catch (error) {
     console.error("Error registering user:", error)
     return {
