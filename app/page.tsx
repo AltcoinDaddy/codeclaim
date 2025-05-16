@@ -10,7 +10,6 @@ import {
   getReferralStats,
   checkUserExists,
   validateWalletAddress,
-  incrementReferralCount,
 } from "./actions"
 import {
   Terminal,
@@ -152,29 +151,29 @@ export default function Page() {
   }, [])
 
   // Process referrer if present
-  useEffect(() => {
-    const processReferrer = async () => {
-      if (referrer && formSubmitted && !referrerProcessedRef.current) {
-        // Normalize the referrer to lowercase
-        const normalizedReferrer = referrer.toLowerCase()
-        console.log(`Processing referrer: ${normalizedReferrer} after successful submission`)
-        try {
-          const result = await incrementReferralCount(normalizedReferrer)
-          if (result.success) {
-            console.log(`Successfully incremented referral count for ${normalizedReferrer} to ${result.newCount}`)
-            localStorage.setItem("codeclaim_processed_referrer", "true")
-            referrerProcessedRef.current = true
-          } else {
-            console.error(`Failed to increment referral count for ${normalizedReferrer}:`, result.error)
-          }
-        } catch (error) {
-          console.error(`Error processing referrer ${normalizedReferrer}:`, error)
-        }
-      }
-    }
+  // useEffect(() => {
+  //   const processReferrer = async () => {
+  //     if (referrer && formSubmitted && !referrerProcessedRef.current) {
+  //       // Normalize the referrer to lowercase
+  //       const normalizedReferrer = referrer.toLowerCase()
+  //       console.log(`Processing referrer: ${normalizedReferrer} after successful submission`)
+  //       try {
+  //         const result = await incrementReferralCount(normalizedReferrer)
+  //         if (result.success) {
+  //           console.log(`Successfully incremented referral count for ${normalizedReferrer} to ${result.newCount}`)
+  //           localStorage.setItem("codeclaim_processed_referrer", "true")
+  //           referrerProcessedRef.current = true
+  //         } else {
+  //           console.error(`Failed to increment referral count for ${normalizedReferrer}:`, result.error)
+  //         }
+  //       } catch (error) {
+  //         console.error(`Error processing referrer ${normalizedReferrer}:`, error)
+  //       }
+  //     }
+  //   }
 
-    processReferrer()
-  }, [referrer, formSubmitted])
+  //   processReferrer()
+  // }, [referrer, formSubmitted])
 
   // Save progress to localStorage when it changes
   useEffect(() => {
@@ -516,20 +515,9 @@ export default function Page() {
         // If there was a referrer, store it and ensure it's processed
         if (referrer) {
           localStorage.setItem("codeclaim_referrer", referrer)
-
-          // Try to increment the referrer's count directly
-          try {
-            const incrementResult = await incrementReferralCount(referrer)
-            if (incrementResult.success) {
-              console.log(`Successfully incremented referral count for ${referrer} to ${incrementResult.newCount}`)
-              localStorage.setItem("codeclaim_processed_referrer", "true")
-              referrerProcessedRef.current = true
-            } else {
-              console.error(`Failed to increment referral count for ${referrer}:`, incrementResult.error)
-            }
-          } catch (refError) {
-            console.error(`Error incrementing referral count for ${referrer}:`, refError)
-          }
+          // We'll let the server handle the referral count increment
+          localStorage.setItem("codeclaim_processed_referrer", "true")
+          referrerProcessedRef.current = true
         }
 
         setFormSubmitted(true)

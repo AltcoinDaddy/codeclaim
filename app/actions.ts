@@ -171,6 +171,7 @@ export async function registerUserWithTasks(
               console.log(
                 `Updating referral count to ${newCount} for user ${referrerData.username} (${referrerData.id})`,
               )
+              console.log(`Previous referral count was: ${referrerData.referral_count || 0}`)
 
               const { error: updateError } = await supabase
                 .from("waitlist")
@@ -181,6 +182,7 @@ export async function registerUserWithTasks(
                 console.error("Error updating referral count:", updateError)
               } else {
                 console.log(`Successfully updated referral count for ${referrerData.username} to ${newCount}`)
+                console.log(`This is the ONLY place where referral_count should be incremented`)
               }
             } else {
               console.log(`Referrer not found: ${normalizedReferrerUsername}`)
