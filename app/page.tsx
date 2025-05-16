@@ -489,9 +489,26 @@ export default function Page() {
           window.history.replaceState({}, "", url.toString())
         }
       } else {
-        setFormErrors({
-          general: result.error || "Failed to register. Please try again.",
-        })
+        // Display more specific error messages based on error codes
+        const errorMessage = result.error || "Failed to register. Please try again."
+
+        if (result.code === "USERNAME_TAKEN") {
+          setFormErrors({
+            username: "Username already taken. Please choose another.",
+            general: "Registration failed: Username already taken.",
+          })
+        } else if (result.code === "WALLET_TAKEN") {
+          setFormErrors({
+            wallet: "This wallet address is already registered.",
+            general: "Registration failed: Wallet address already registered.",
+          })
+        } else {
+          setFormErrors({
+            general: errorMessage,
+          })
+        }
+
+        console.error("Registration error:", result)
       }
     } catch (error) {
       console.error("Error submitting form:", error)
@@ -751,7 +768,7 @@ export default function Page() {
                   <span className="success-detail-label">Wallet:</span> {walletAddress}
                 </div>
                 <div className="success-detail-item">
-                  <span className="success-detail-label">Tasks:</span> All Complete (3/3)
+                  <span className="success-detail-label">Tasks:</span> All Complete (4/4)
                 </div>
                 {referrer && (
                   <div className="success-detail-item">

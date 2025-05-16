@@ -6,7 +6,8 @@ import { randomUUID } from "crypto"
 
 type TaskType = "discord" | "telegram" | "twitter" | "tweet"
 
-// Update the registerUserWithTasks function to make username optional
+// Update the registerUserWithTasks function to include better error handling and logging
+
 export async function registerUserWithTasks(
   username: string | null,
   walletAddress: string,
@@ -14,6 +15,7 @@ export async function registerUserWithTasks(
   referrerUsername?: string,
 ) {
   try {
+    console.log("Starting user registration with:", { username, walletAddress, tasks, referrerUsername })
     const supabase = getServerSide()
 
     // Generate a random username if none provided
@@ -36,9 +38,36 @@ export async function registerUserWithTasks(
       }
     }
 
+    // Check if wallet address already exists
+    const { data: existingWallet, error: walletCheckError } = await supabase
+      .from("waitlist")
+      .select("id")
+      .eq("wallet_address", walletAddress)
+      .maybeSingle()
+
+    if (walletCheckError) {
+      console.error("Error checking existing wallet:", walletCheckError)
+      return {
+        success: false,
+        error: "Failed to check if wallet exists",
+        errorDetail: walletCheckError.message,
+        code: "DATABASE_ERROR",
+      }
+    }
+
+    if (existingWallet && !existingUser) {
+      console.log("Wallet address already exists for a different user")
+      return {
+        success: false,
+        error: "Wallet address already registered",
+        code: "WALLET_TAKEN",
+      }
+    }
+
     let userId
 
     if (existingUser) {
+      console.log("Updating existing user:", existingUser.id)
       // Update existing user
       const { data, error: updateError } = await supabase
         .from("waitlist")
@@ -66,43 +95,63 @@ export async function registerUserWithTasks(
 
       userId = data.id
     } else {
+      console.log("Creating new user with username:", finalUsername)
       // Create new user with task completion status
-      const { data, error: insertError } = await supabase
-        .from("waitlist")
-        .insert({
-          username: finalUsername,
-          wallet_address: walletAddress,
-          referrer_username: referrerUsername,
-          discord_completed: tasks.discord,
-          telegram_completed: tasks.telegram,
-          twitter_completed: tasks.twitter,
-          tweet_completed: tasks.tweet,
-          referral_count: 0,
-        })
-        .select("id")
-        .single()
+      try {
+        const { data, error: insertError } = await supabase
+          .from("waitlist")
+          .insert({
+            username: finalUsername,
+            wallet_address: walletAddress,
+            referrer_username: referrerUsername,
+            discord_completed: tasks.discord,
+            telegram_completed: tasks.telegram,
+            twitter_completed: tasks.twitter,
+            tweet_completed: tasks.tweet,
+            referral_count: 0,
+          })
+          .select("id")
+          .single()
 
-      if (insertError) {
-        // Check for unique constraint violation
-        if (insertError.code === "23505") {
+        if (insertError) {
+          // Check for unique constraint violation
+          if (insertError.code === "23505") {
+            if (insertError.message.includes("username")) {
+              return {
+                success: false,
+                error: "Username already taken",
+                errorDetail: insertError.message,
+                code: "USERNAME_TAKEN",
+              }
+            } else if (insertError.message.includes("wallet_address")) {
+              return {
+                success: false,
+                error: "Wallet address already registered",
+                errorDetail: insertError.message,
+                code: "WALLET_TAKEN",
+              }
+            }
+          }
+
+          console.error("Error inserting user:", insertError)
           return {
             success: false,
-            error: "Username already taken",
+            error: "Failed to create user",
             errorDetail: insertError.message,
-            code: "USERNAME_TAKEN",
+            code: "INSERT_ERROR",
           }
         }
 
-        console.error("Error inserting user:", insertError)
+        userId = data.id
+      } catch (insertCatchError) {
+        console.error("Exception during user insertion:", insertCatchError)
         return {
           success: false,
-          error: "Failed to create user",
-          errorDetail: insertError.message,
-          code: "INSERT_ERROR",
+          error: "Exception during user creation",
+          errorDetail: (insertCatchError as Error).message,
+          code: "INSERT_EXCEPTION",
         }
       }
-
-      userId = data.id
 
       // If there's a referrer, increment their referral count
       if (referrerUsername) {
@@ -143,12 +192,13 @@ export async function registerUserWithTasks(
     }
 
     revalidatePath("/")
+    console.log("Registration successful for user:", userId)
     return { success: true, userId, username: finalUsername }
   } catch (error) {
     console.error("Error registering user:", error)
     return {
       success: false,
-      error: "An unexpected error occurred",
+      error: "An unexpected error occurred during registration",
       errorDetail: (error as Error).message,
       code: "UNKNOWN_ERROR",
     }
