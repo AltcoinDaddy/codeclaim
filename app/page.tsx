@@ -10,6 +10,7 @@ import {
   getReferralStats,
   checkUserExists,
   validateWalletAddress,
+  incrementReferralCount,
 } from "./actions"
 import {
   Terminal,
@@ -97,6 +98,8 @@ export default function Page() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Interval ref for refreshing referral stats
   const statsRefreshRef = useRef<NodeJS.Timeout | null>(null)
+  // Ref to track if referrer has been processed
+  const referrerProcessedRef = useRef<boolean>(false)
 
   // Check if all tasks are completed
   const allTasksCompleted = tasks.discord && tasks.telegram && tasks.twitter && tasks.tweet // Updated to include new task
@@ -108,6 +111,11 @@ export default function Page() {
     const savedWallet = localStorage.getItem("codeclaim_wallet")
     const savedSubmissionStatus = localStorage.getItem("codeclaim_submitted")
     const savedUserId = localStorage.getItem("codeclaim_user_id")
+    const processedReferrer = localStorage.getItem("codeclaim_processed_referrer")
+
+    if (processedReferrer === "true") {
+      referrerProcessedRef.current = true
+    }
 
     if (savedTasks) {
       try {
@@ -142,6 +150,31 @@ export default function Page() {
       setLoadedFromStorage(true)
     }
   }, [])
+
+  // Process referrer if present
+  useEffect(() => {
+    const processReferrer = async () => {
+      if (referrer && formSubmitted && !referrerProcessedRef.current) {
+        // Normalize the referrer to lowercase
+        const normalizedReferrer = referrer.toLowerCase()
+        console.log(`Processing referrer: ${normalizedReferrer} after successful submission`)
+        try {
+          const result = await incrementReferralCount(normalizedReferrer)
+          if (result.success) {
+            console.log(`Successfully incremented referral count for ${normalizedReferrer} to ${result.newCount}`)
+            localStorage.setItem("codeclaim_processed_referrer", "true")
+            referrerProcessedRef.current = true
+          } else {
+            console.error(`Failed to increment referral count for ${normalizedReferrer}:`, result.error)
+          }
+        } catch (error) {
+          console.error(`Error processing referrer ${normalizedReferrer}:`, error)
+        }
+      }
+    }
+
+    processReferrer()
+  }, [referrer, formSubmitted])
 
   // Save progress to localStorage when it changes
   useEffect(() => {
@@ -447,8 +480,14 @@ export default function Page() {
 
     try {
       // Register user with all tasks in a single operation
-      // Pass null if username is empty
-      const result = await registerUserWithTasks(username.trim() || null, walletAddress, tasks, referrer || undefined)
+      // Pass null if username is empty, otherwise normalize to lowercase
+      const finalUsername = username.trim() ? username.trim().toLowerCase() : null
+      const result = await registerUserWithTasks(
+        finalUsername,
+        walletAddress,
+        tasks,
+        referrer ? referrer.toLowerCase() : undefined,
+      )
 
       if (result.success && result.userId) {
         setUserId(result.userId)
@@ -474,9 +513,23 @@ export default function Page() {
         localStorage.setItem("codeclaim_username", result.username || username)
         localStorage.setItem("codeclaim_wallet", walletAddress)
 
-        // If there was a referrer, store it
+        // If there was a referrer, store it and ensure it's processed
         if (referrer) {
           localStorage.setItem("codeclaim_referrer", referrer)
+
+          // Try to increment the referrer's count directly
+          try {
+            const incrementResult = await incrementReferralCount(referrer)
+            if (incrementResult.success) {
+              console.log(`Successfully incremented referral count for ${referrer} to ${incrementResult.newCount}`)
+              localStorage.setItem("codeclaim_processed_referrer", "true")
+              referrerProcessedRef.current = true
+            } else {
+              console.error(`Failed to increment referral count for ${referrer}:`, incrementResult.error)
+            }
+          } catch (refError) {
+            console.error(`Error incrementing referral count for ${referrer}:`, refError)
+          }
         }
 
         setFormSubmitted(true)
@@ -522,7 +575,7 @@ export default function Page() {
 
   // Copy referral link to clipboard
   const copyReferralLink = useCallback(() => {
-    // Remove the username requirement check
+    // Use the username as is for display purposes, but ensure it works case-insensitively
     const referralLink = `${window.location.origin}${window.location.pathname}${username ? `?ref=${username}` : ""}`
 
     try {
@@ -562,6 +615,7 @@ export default function Page() {
     localStorage.removeItem("codeclaim_submitted")
     localStorage.removeItem("codeclaim_referral_count")
     localStorage.removeItem("codeclaim_user_id")
+    localStorage.removeItem("codeclaim_processed_referrer")
 
     // Reset state
     setFormSubmitted(false)
@@ -574,6 +628,7 @@ export default function Page() {
     setUsername("")
     setWalletAddress("")
     setUserId(null)
+    referrerProcessedRef.current = false
 
     // Force page reload to reset everything
     window.location.reload()

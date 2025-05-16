@@ -6,8 +6,7 @@ import { randomUUID } from "crypto"
 
 type TaskType = "discord" | "telegram" | "twitter" | "tweet"
 
-// Update the registerUserWithTasks function to include better error handling and logging
-
+// Update the registerUserWithTasks function to fix referral counting
 export async function registerUserWithTasks(
   username: string | null,
   walletAddress: string,
@@ -143,6 +142,54 @@ export async function registerUserWithTasks(
         }
 
         userId = data.id
+
+        // If there's a referrer, increment their referral count
+        if (referrerUsername) {
+          // Convert referrer username to lowercase for case-insensitive comparison
+          const normalizedReferrerUsername = referrerUsername.toLowerCase()
+          console.log(
+            `Incrementing referral count for referrer: ${normalizedReferrerUsername} (normalized from ${referrerUsername})`,
+          )
+
+          try {
+            // First check if referrer exists - using case-insensitive query
+            const { data: referrerData, error: referrerCheckError } = await supabase
+              .from("waitlist")
+              .select("id, referral_count, username")
+              .ilike("username", normalizedReferrerUsername)
+              .maybeSingle()
+
+            if (referrerCheckError) {
+              console.error("Error checking referrer:", referrerCheckError)
+            } else if (referrerData) {
+              console.log(
+                `Referrer found: ${referrerData.username}, current count: ${referrerData.referral_count || 0}`,
+              )
+
+              // Referrer exists, increment their count directly
+              const newCount = (referrerData.referral_count || 0) + 1
+              console.log(
+                `Updating referral count to ${newCount} for user ${referrerData.username} (${referrerData.id})`,
+              )
+
+              const { error: updateError } = await supabase
+                .from("waitlist")
+                .update({ referral_count: newCount })
+                .eq("id", referrerData.id)
+
+              if (updateError) {
+                console.error("Error updating referral count:", updateError)
+              } else {
+                console.log(`Successfully updated referral count for ${referrerData.username} to ${newCount}`)
+              }
+            } else {
+              console.log(`Referrer not found: ${normalizedReferrerUsername}`)
+            }
+          } catch (refError) {
+            // Don't fail the whole registration if referral update fails
+            console.error("Error processing referral:", refError)
+          }
+        }
       } catch (insertCatchError) {
         console.error("Exception during user insertion:", insertCatchError)
         return {
@@ -150,43 +197,6 @@ export async function registerUserWithTasks(
           error: "Exception during user creation",
           errorDetail: (insertCatchError as Error).message,
           code: "INSERT_EXCEPTION",
-        }
-      }
-
-      // If there's a referrer, increment their referral count
-      if (referrerUsername) {
-        console.log(`Incrementing referral count for referrer: ${referrerUsername}`)
-
-        try {
-          // First check if referrer exists
-          const { data: referrerData, error: referrerCheckError } = await supabase
-            .from("waitlist")
-            .select("id, referral_count")
-            .eq("username", referrerUsername)
-            .maybeSingle()
-
-          if (!referrerCheckError && referrerData) {
-            console.log(`Referrer found: ${referrerUsername}, current count: ${referrerData.referral_count}`)
-
-            // Referrer exists, increment their count directly
-            const newCount = (referrerData.referral_count || 0) + 1
-
-            const { error: updateError } = await supabase
-              .from("waitlist")
-              .update({ referral_count: newCount })
-              .eq("username", referrerUsername)
-
-            if (updateError) {
-              console.error("Error updating referral count:", updateError)
-            } else {
-              console.log(`Successfully updated referral count for ${referrerUsername} to ${newCount}`)
-            }
-          } else {
-            console.log(`Referrer not found or error: ${referrerUsername}`, referrerCheckError)
-          }
-        } catch (refError) {
-          // Don't fail the whole registration if referral update fails
-          console.error("Error processing referral:", refError)
         }
       }
     }
@@ -201,6 +211,70 @@ export async function registerUserWithTasks(
       error: "An unexpected error occurred during registration",
       errorDetail: (error as Error).message,
       code: "UNKNOWN_ERROR",
+    }
+  }
+}
+
+// Add a dedicated function to increment referral count
+export async function incrementReferralCount(referrerUsername: string) {
+  try {
+    // Normalize the username to lowercase for case-insensitive comparison
+    const normalizedUsername = referrerUsername.toLowerCase()
+    console.log(`Manually incrementing referral count for: ${normalizedUsername} (normalized from ${referrerUsername})`)
+    const supabase = getServerSide()
+
+    // First get the current count - using case-insensitive query
+    const { data: referrer, error: fetchError } = await supabase
+      .from("waitlist")
+      .select("id, referral_count")
+      .ilike("username", normalizedUsername)
+      .single()
+
+    if (fetchError) {
+      console.error("Error fetching referrer:", fetchError)
+      return {
+        success: false,
+        error: "Failed to fetch referrer information",
+        errorDetail: fetchError.message,
+      }
+    }
+
+    if (!referrer) {
+      return {
+        success: false,
+        error: "Referrer not found",
+      }
+    }
+
+    // Increment the count
+    const newCount = (referrer.referral_count || 0) + 1
+
+    const { error: updateError } = await supabase
+      .from("waitlist")
+      .update({ referral_count: newCount })
+      .eq("id", referrer.id)
+
+    if (updateError) {
+      console.error("Error updating referral count:", updateError)
+      return {
+        success: false,
+        error: "Failed to update referral count",
+        errorDetail: updateError.message,
+      }
+    }
+
+    revalidatePath("/")
+    return {
+      success: true,
+      newCount,
+      message: `Successfully incremented referral count to ${newCount}`,
+    }
+  } catch (error) {
+    console.error("Error incrementing referral count:", error)
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+      errorDetail: (error as Error).message,
     }
   }
 }
@@ -252,13 +326,15 @@ export async function getReferralStats(username: string) {
       }
     }
 
+    // Normalize the username to lowercase for case-insensitive comparison
+    const normalizedUsername = username.toLowerCase()
     const supabase = getServerSide()
 
     try {
       const { data, error } = await supabase
         .from("waitlist")
         .select("referral_count")
-        .eq("username", username)
+        .ilike("username", normalizedUsername)
         .maybeSingle()
 
       if (error) {
@@ -272,7 +348,7 @@ export async function getReferralStats(username: string) {
         }
       }
 
-      console.log(`Retrieved referral count for ${username}:`, data?.referral_count || 0)
+      console.log(`Retrieved referral count for ${normalizedUsername}:`, data?.referral_count || 0)
 
       return {
         success: true,
@@ -313,9 +389,15 @@ export async function checkUserExists(username: string) {
       }
     }
 
+    // Normalize the username to lowercase for case-insensitive comparison
+    const normalizedUsername = username.toLowerCase()
     const supabase = getServerSide()
 
-    const { data, error } = await supabase.from("waitlist").select("id").eq("username", username).maybeSingle()
+    const { data, error } = await supabase
+      .from("waitlist")
+      .select("id")
+      .ilike("username", normalizedUsername)
+      .maybeSingle()
 
     if (error) {
       console.error("Error checking if user exists:", error)
@@ -348,7 +430,7 @@ export async function getTaskCompletionStatus(userId: string) {
 
     const { data, error } = await supabase
       .from("waitlist")
-      .select("discord_completed, telegram_completed, twitter_completed")
+      .select("discord_completed, telegram_completed, twitter_completed, tweet_completed")
       .eq("id", userId)
       .single()
 
@@ -363,6 +445,7 @@ export async function getTaskCompletionStatus(userId: string) {
           discord: false,
           telegram: false,
           twitter: false,
+          tweet: false,
         },
       }
     }
@@ -373,6 +456,7 @@ export async function getTaskCompletionStatus(userId: string) {
         discord: data.discord_completed,
         telegram: data.telegram_completed,
         twitter: data.twitter_completed,
+        tweet: data.tweet_completed,
       },
     }
   } catch (error) {
@@ -386,6 +470,7 @@ export async function getTaskCompletionStatus(userId: string) {
         discord: false,
         telegram: false,
         twitter: false,
+        tweet: false,
       },
     }
   }
