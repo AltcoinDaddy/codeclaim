@@ -102,31 +102,36 @@ export async function registerUserWithTasks(
       if (referrerUsername) {
         console.log(`Incrementing referral count for referrer: ${referrerUsername}`)
 
-        // First check if referrer exists
-        const { data: referrerData, error: referrerCheckError } = await supabase
-          .from("waitlist")
-          .select("id, referral_count")
-          .eq("username", referrerUsername)
-          .maybeSingle()
-
-        if (!referrerCheckError && referrerData) {
-          console.log(`Referrer found: ${referrerUsername}, current count: ${referrerData.referral_count}`)
-
-          // Referrer exists, increment their count directly
-          const newCount = (referrerData.referral_count || 0) + 1
-
-          const { error: updateError } = await supabase
+        try {
+          // First check if referrer exists
+          const { data: referrerData, error: referrerCheckError } = await supabase
             .from("waitlist")
-            .update({ referral_count: newCount })
+            .select("id, referral_count")
             .eq("username", referrerUsername)
+            .maybeSingle()
 
-          if (updateError) {
-            console.error("Error updating referral count:", updateError)
+          if (!referrerCheckError && referrerData) {
+            console.log(`Referrer found: ${referrerUsername}, current count: ${referrerData.referral_count}`)
+
+            // Referrer exists, increment their count directly
+            const newCount = (referrerData.referral_count || 0) + 1
+
+            const { error: updateError } = await supabase
+              .from("waitlist")
+              .update({ referral_count: newCount })
+              .eq("username", referrerUsername)
+
+            if (updateError) {
+              console.error("Error updating referral count:", updateError)
+            } else {
+              console.log(`Successfully updated referral count for ${referrerUsername} to ${newCount}`)
+            }
           } else {
-            console.log(`Successfully updated referral count for ${referrerUsername} to ${newCount}`)
+            console.log(`Referrer not found or error: ${referrerUsername}`, referrerCheckError)
           }
-        } else {
-          console.log(`Referrer not found or error: ${referrerUsername}`, referrerCheckError)
+        } catch (refError) {
+          // Don't fail the whole registration if referral update fails
+          console.error("Error processing referral:", refError)
         }
       }
     }
@@ -193,29 +198,40 @@ export async function getReferralStats(username: string) {
 
     const supabase = getServerSide()
 
-    const { data, error } = await supabase
-      .from("waitlist")
-      .select("referral_count")
-      .eq("username", username)
-      .maybeSingle()
+    try {
+      const { data, error } = await supabase
+        .from("waitlist")
+        .select("referral_count")
+        .eq("username", username)
+        .maybeSingle()
 
-    if (error) {
-      console.error("Error getting referral stats:", error)
+      if (error) {
+        console.error("Error getting referral stats:", error)
+        return {
+          success: false,
+          error: "Failed to get referral statistics",
+          errorDetail: error.message,
+          code: "QUERY_ERROR",
+          count: 0,
+        }
+      }
+
+      console.log(`Retrieved referral count for ${username}:`, data?.referral_count || 0)
+
+      return {
+        success: true,
+        count: data?.referral_count || 0,
+        message: "Referral stats retrieved successfully",
+      }
+    } catch (queryError) {
+      console.error("Error in Supabase query:", queryError)
       return {
         success: false,
-        error: "Failed to get referral statistics",
-        errorDetail: error.message,
+        error: "Database query failed",
+        errorDetail: (queryError as Error).message,
         code: "QUERY_ERROR",
         count: 0,
       }
-    }
-
-    console.log(`Retrieved referral count for ${username}:`, data?.referral_count || 0)
-
-    return {
-      success: true,
-      count: data?.referral_count || 0,
-      message: "Referral stats retrieved successfully",
     }
   } catch (error) {
     console.error("Error getting referral stats:", error)
