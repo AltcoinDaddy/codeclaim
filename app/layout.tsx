@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   description: "Join the CodeClaim waitlist and earn rewards for your open source contributions",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/images/code_logo_new.png", type: "image/png" },
+      { url: "https://i.ibb.co/b5grxTXD/code-logo.png", sizes: "any" },
+      { url: "https://i.ibb.co/b5grxTXD/code-logo.png", type: "any" },
     ],
-    apple: { url: "/images/code_logo_new.png", type: "image/png" },
+    apple: { url: "https://i.ibb.co/b5grxTXD/code-logo.png", type: "any" },
   },
     generator: 'v0.dev'
 }
