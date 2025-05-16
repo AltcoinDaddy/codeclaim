@@ -4,13 +4,13 @@ import { getServerSide } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 
-type TaskType = "discord" | "telegram" | "twitter"
+type TaskType = "discord" | "telegram" | "twitter" | "tweet"
 
 // Update the registerUserWithTasks function to make username optional
 export async function registerUserWithTasks(
   username: string | null,
   walletAddress: string,
-  tasks: { discord: boolean; telegram: boolean; twitter: boolean },
+  tasks: { discord: boolean; telegram: boolean; twitter: boolean; tweet: boolean },
   referrerUsername?: string,
 ) {
   try {
@@ -47,6 +47,7 @@ export async function registerUserWithTasks(
           discord_completed: tasks.discord,
           telegram_completed: tasks.telegram,
           twitter_completed: tasks.twitter,
+          tweet_completed: tasks.tweet,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingUser.id)
@@ -75,6 +76,7 @@ export async function registerUserWithTasks(
           discord_completed: tasks.discord,
           telegram_completed: tasks.telegram,
           twitter_completed: tasks.twitter,
+          tweet_completed: tasks.tweet,
           referral_count: 0,
         })
         .select("id")

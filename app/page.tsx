@@ -25,10 +25,11 @@ import {
   Twitter,
   Wallet,
   ChevronRight,
+  Heart,
 } from "lucide-react"
 
 // Types for task management
-type TaskId = "discord" | "telegram" | "twitter"
+type TaskId = "discord" | "telegram" | "twitter" | "tweet" // Added new task type
 type TaskStatus = Record<TaskId, boolean>
 type TaskTimer = Record<TaskId, number>
 type TaskInProgress = Record<TaskId, boolean>
@@ -52,6 +53,7 @@ export default function Page() {
     discord: false,
     telegram: false,
     twitter: false,
+    tweet: false, // Added new task
   })
 
   // State for task timers
@@ -59,6 +61,7 @@ export default function Page() {
     discord: 0,
     telegram: 0,
     twitter: 0,
+    tweet: 0, // Added new task
   })
 
   // State for task in progress
@@ -66,6 +69,7 @@ export default function Page() {
     discord: false,
     telegram: false,
     twitter: false,
+    tweet: false, // Added new task
   })
 
   // Form state
@@ -95,7 +99,7 @@ export default function Page() {
   const statsRefreshRef = useRef<NodeJS.Timeout | null>(null)
 
   // Check if all tasks are completed
-  const allTasksCompleted = tasks.discord && tasks.telegram && tasks.twitter
+  const allTasksCompleted = tasks.discord && tasks.telegram && tasks.twitter && tasks.tweet // Updated to include new task
 
   // Load saved progress from localStorage on initial render
   useEffect(() => {
@@ -108,7 +112,13 @@ export default function Page() {
     if (savedTasks) {
       try {
         const parsedTasks = JSON.parse(savedTasks) as TaskStatus
-        setTasks(parsedTasks)
+        // Ensure the new task is included even if loading from older localStorage
+        setTasks({
+          discord: parsedTasks.discord || false,
+          telegram: parsedTasks.telegram || false,
+          twitter: parsedTasks.twitter || false,
+          tweet: parsedTasks.tweet || false, // Handle case where old data doesn't have this field
+        })
       } catch (e) {
         console.error("Error parsing saved tasks:", e)
       }
@@ -542,6 +552,7 @@ export default function Page() {
       discord: false,
       telegram: false,
       twitter: false,
+      tweet: false,
     })
     setUsername("")
     setWalletAddress("")
@@ -943,6 +954,51 @@ export default function Page() {
                       </div>
                     ) : (
                       <div className="task-completed-message">X/Twitter task completed!</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* New Quote Tweet Task */}
+              <div className="task-item">
+                <div className="task-item-content">
+                  <input
+                    type="checkbox"
+                    id="task4"
+                    checked={tasks.tweet}
+                    readOnly
+                    className="task-checkbox"
+                    aria-label="Quote Tweet task"
+                  />
+                  <div className="task-details">
+                    <label htmlFor="task4" className="task-label">
+                      <span className={`task-number ${tasks.tweet ? "task-completed" : ""}`}>
+                        {tasks.tweet ? "✓" : "4."}
+                      </span>
+                      Like & Quote Tweet Pinned Post
+                    </label>
+
+                    {!tasks.tweet && !inProgress.tweet ? (
+                      <a
+                        href="https://x.com/code_claim/status/1923475114865078536?s=46"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => startTaskTimer("tweet")}
+                        className="task-button"
+                        aria-label="Like and Quote Tweet"
+                      >
+                        <span className="flex items-center gap-1">
+                          <Heart className="h-3.5 w-3.5" />
+                          Like & Quote Tweet with #CodeClaim $Code
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </span>
+                      </a>
+                    ) : inProgress.tweet ? (
+                      <div className="task-progress">
+                        <div className="task-progress-text">Verifying your task completion...</div>
+                      </div>
+                    ) : (
+                      <div className="task-completed-message">Quote Tweet task completed!</div>
                     )}
                   </div>
                 </div>
