@@ -100,23 +100,33 @@ export async function registerUserWithTasks(
 
       // If there's a referrer, increment their referral count
       if (referrerUsername) {
+        console.log(`Incrementing referral count for referrer: ${referrerUsername}`)
+
         // First check if referrer exists
         const { data: referrerData, error: referrerCheckError } = await supabase
           .from("waitlist")
-          .select("id")
+          .select("id, referral_count")
           .eq("username", referrerUsername)
           .maybeSingle()
 
         if (!referrerCheckError && referrerData) {
-          // Referrer exists, increment their count
-          const { error: referralError } = await incrementReferralCount(referrerUsername)
+          console.log(`Referrer found: ${referrerUsername}, current count: ${referrerData.referral_count}`)
 
-          if (referralError) {
-            console.error("Error incrementing referral count:", referralError)
-            // We don't fail the whole operation if just the referral count update fails
+          // Referrer exists, increment their count directly
+          const newCount = (referrerData.referral_count || 0) + 1
+
+          const { error: updateError } = await supabase
+            .from("waitlist")
+            .update({ referral_count: newCount })
+            .eq("username", referrerUsername)
+
+          if (updateError) {
+            console.error("Error updating referral count:", updateError)
+          } else {
+            console.log(`Successfully updated referral count for ${referrerUsername} to ${newCount}`)
           }
         } else {
-          console.log("Referrer not found:", referrerUsername)
+          console.log(`Referrer not found or error: ${referrerUsername}`, referrerCheckError)
         }
       }
     }
@@ -169,54 +179,6 @@ export async function recordCompletedTask(userId: string, taskType: TaskType) {
   }
 }
 
-// Update the incrementReferralCount function to be more robust
-async function incrementReferralCount(username: string) {
-  try {
-    const supabase = getServerSide()
-
-    // First try using a direct update with a counter increment
-    const { data, error } = await supabase
-      .from("waitlist")
-      .update({ referral_count: supabase.sql`referral_count + 1` })
-      .eq("username", username)
-      .select("referral_count")
-      .single()
-
-    if (error) {
-      console.error("Error incrementing referral count with direct update:", error)
-
-      // Fallback: Get current count and increment
-      const { data: currentData, error: getError } = await supabase
-        .from("waitlist")
-        .select("referral_count")
-        .eq("username", username)
-        .single()
-
-      if (getError) {
-        return { error: getError }
-      }
-
-      const newCount = (currentData?.referral_count || 0) + 1
-
-      const { error: updateError } = await supabase
-        .from("waitlist")
-        .update({ referral_count: newCount })
-        .eq("username", username)
-
-      if (updateError) {
-        return { error: updateError }
-      }
-
-      return { success: true, count: newCount }
-    }
-
-    return { success: true, count: data?.referral_count }
-  } catch (error) {
-    console.error("Error in incrementReferralCount:", error)
-    return { error }
-  }
-}
-
 // Update the getReferralStats function to be more reliable
 export async function getReferralStats(username: string) {
   try {
@@ -247,6 +209,8 @@ export async function getReferralStats(username: string) {
         count: 0,
       }
     }
+
+    console.log(`Retrieved referral count for ${username}:`, data?.referral_count || 0)
 
     return {
       success: true,
