@@ -611,7 +611,7 @@ export default function Page() {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
             <div className="logo-container">
-              <img src="d" alt="CodeClaim Logo" className="h-8 w-8" />
+              <img src="https://i.ibb.co/b5grxTXD/code-logo.png" alt="CodeClaim Logo" className="h-8 w-8" />
             </div>
             <div className="flex items-center">
               <Terminal className="h-4 w-4 mr-2 text-[rgb(0,255,194)]" />

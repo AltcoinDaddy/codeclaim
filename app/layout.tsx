@@ -25,7 +25,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="shortcut icon" href="https://i.ibb.co/b5grxTXD/code-logo.png" />
-        <link rel="icon" href="https://i.ibb.co/b5grxTXD/code-logo.png" type="image/png" />
+        <link rel="icon" href="https://i.ibb.co/b5grxTXD/code-logo.png" type="any" />
       </head>
       <body>{children}</body>
     </html>
