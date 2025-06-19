@@ -1040,7 +1040,7 @@ export default function Page() {
 
                     {!tasks.tweet && !inProgress.tweet ? (
                       <a
-                        href="https://x.com/code_claim/status/1923475114865078536?s=46"
+                        href="https://x.com/Code_Claim/status/1935637743268151705"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => startTaskTimer("tweet")}
